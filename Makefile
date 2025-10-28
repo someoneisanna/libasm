@@ -1,12 +1,9 @@
 NAME = libasm.a
 
 AR = ar rcs
-RANLIB = ranlib
 
 ASM = nasm
 ASM_FLAGS = -f elf64
-ASM_DFLAGS = -g -F dwarf
-LINKER = ld
 
 CC = cc
 CFLAGS = -Wall -Wextra -Werror
@@ -24,10 +21,9 @@ all: $(NAME)
 
 $(NAME): $(ASM_OBJ)
 	$(AR) $(NAME) $(ASM_OBJ)
-	$(RANLIB) $(NAME)
 
 %.o: %.s
-	$(ASM) $(ASM_FLAGS) $(ASM_DFLAGS) $< -o $@
+	$(ASM) $(ASM_FLAGS) $< -o $@
 
 $(C_OBJ): $(C_SRC)
 	$(CC) $(CFLAGS) -c $(C_SRC) -o $(C_OBJ)
@@ -42,7 +38,10 @@ valgrind: run
 	valgrind --leak-check=full --track-fds=yes ./$(TEST_EXE)
 
 clean:
-	rm -f $(NAME) $(ASM_OBJ) $(C_OBJ) $(TEST_EXE) $(TEST_FILES)
+	rm -f $(ASM_OBJ) $(C_OBJ)
+
+fclean: clean
+	rm -f $(NAME) $(TEST_EXE) $(TEST_FILES)
 
 re: clean all
 

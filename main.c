@@ -1,16 +1,4 @@
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <errno.h>
-#include <stdlib.h>
-
-extern size_t	 ft_strlen(const char *s);
-extern char		*ft_strcpy(char *dest, const char *src);
-extern int		 ft_strcmp(const char *s1, const char *s2);
-extern ssize_t	 ft_write(int fd, const void *buf, size_t count);
-extern ssize_t	 ft_read(int fd, void *buf, size_t count);
-extern char		*ft_strdup(const char *s);
+#include "libasm.h"
 
 int main()
 {
@@ -69,21 +57,23 @@ int main()
 	errno = 0;
 	ssize_t ret = ft_write(-1, t2, strlen(t2));
 	printf("t2 to invalid fd (-1)        | mine: %li + errno: %d  | original: ", ret, errno);
+	errno = 0;
 	ret = write(-1, t2, strlen(t2));
 	printf("%li + errno: %d\n", ret, errno);
 	
 	errno = 0;
 	ret = ft_write(fd3, t2, strlen(t2));
 	printf("t2 to wrong permissions fd   | mine: %li + errno: %d  | original: ", ret, errno);
+	errno = 0;
 	ret = write(fd3, t2, strlen(t2));
 	printf("%li + errno: %d\n", ret, errno);
 
-	// errno = 0;
-	// char *invalid_ptr = (char *)0x123; // deliberately invalid memory
-	// ret = ft_write(1, invalid_ptr, 10);
-	// printf("invalid ptr to STDOUT        | mine: %li + errno: %d | original: ", ret, errno);
-	// ret = write(1, invalid_ptr, 10);
-	// printf("%li + errno: %d\n", ret, errno);
+	errno = 0;
+	char *invalid_ptr = (char *)0; // deliberately invalid memory
+	ret = ft_write(1, invalid_ptr, 10);
+	printf("invalid ptr to STDOUT        | mine: %li + errno: %d | original: ", ret, errno);
+	ret = write(1, invalid_ptr, 10);
+	printf("%li + errno: %d\n", ret, errno);
 
 	close(fd1);
 	close(fd2);
@@ -131,6 +121,7 @@ int main()
 	fd1 = -1;
 	ret = ft_read(fd1, buffer1, 100);
 	printf("\nread from invalid fd (-1)    | mine: %li + errno: %d  | original: ", ret, errno);
+	errno = 0;
 	ret = read(fd1, buffer2, 100);
 	printf("%li + errno: %d\n", ret, errno);
 	
@@ -138,6 +129,16 @@ int main()
 	fd2 = open("test_wrong_permissions.txt", O_WRONLY);
 	ret = ft_read(fd2, buffer1, 100);
 	printf("read from wrong permissions  | mine: %li + errno: %d  | original: ", ret, errno);
+	errno = 0;
+	ret = read(fd2, buffer2, 100);
+	printf("%li + errno: %d\n", ret, errno);
+	close(fd2);
+
+	errno = 0;
+	fd2 = open(".", O_RDONLY, 0666);
+	ret = ft_read(fd2, buffer1, 100);
+	printf("read directory               | mine: %li + errno: %d | original: ", ret, errno);
+	errno = 0;
 	ret = read(fd2, buffer2, 100);
 	printf("%li + errno: %d\n", ret, errno);
 	close(fd2);
@@ -148,12 +149,6 @@ int main()
 	char *dup2 = strdup(t1);
 
 	printf("dup t1    | mine: '%s' | original: '%s'\n", dup1, dup2);
-	free(dup1);
-	free(dup2);
-
-	dup1 = ft_strdup("\0");
-	dup2 = strdup("\0");
-	printf("dup NULL  | mine: '%s' | original: '%s'\n", dup1, dup2);
 	free(dup1);
 	free(dup2);
 	
